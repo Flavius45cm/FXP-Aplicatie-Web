@@ -125,66 +125,31 @@ function showAuthModal(type) {
 
 function handleLogin() {
     const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    
-    auth.signInWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            const user = userCredential.user;
-            db.collection('users').doc(user.uid).get()
-                .then((doc) => {
-                    if (doc.exists) {
-                        currentUser = {
-                            name: doc.data().name,
-                            email: user.email,
-                            memberId: user.uid,
-                            memberSince: doc.data().memberSince
-                        };
-                        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-                        showLoggedInState();
-                        authModal.classList.add('hidden');
-                        showSection('workout-planner');
-                        loadUserData();
-                    }
-                });
-        })
-        .catch((error) => {
-            alert('Error: ' + error.message);
-        });
+    // Simulăm un login simplu
+    currentUser = {
+        name: 'Guest User',
+        email: email,
+        memberSince: new Date().toLocaleDateString()
+    };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    showLoggedInState();
+    authModal.classList.add('hidden');
+    showSection('workout-planner');
 }
 
 function handleRegister() {
     const name = document.getElementById('reg-name').value;
     const email = document.getElementById('reg-email').value;
-    const password = document.getElementById('reg-password').value;
-    
-    auth.createUserWithEmailAndPassword(email, password)
-        .then((userCredential) => {
-            const user = userCredential.user;
-            const userData = {
-                name: name,
-                email: email,
-                memberSince: new Date().toLocaleDateString(),
-                workouts: []
-            };
-            
-            return db.collection('users').doc(user.uid).set(userData);
-        })
-        .then(() => {
-            currentUser = {
-                name: name,
-                email: email,
-                memberId: auth.currentUser.uid,
-                memberSince: new Date().toLocaleDateString()
-            };
-            localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            showLoggedInState();
-            authModal.classList.add('hidden');
-            showSection('workout-planner');
-            loadUserData();
-        })
-        .catch((error) => {
-            alert('Error: ' + error.message);
-        });
+    // Simulăm înregistrarea
+    currentUser = {
+        name: name,
+        email: email,
+        memberSince: new Date().toLocaleDateString()
+    };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    showLoggedInState();
+    authModal.classList.add('hidden');
+    showSection('workout-planner');
 }
 
 function handleLogout() {
@@ -850,16 +815,14 @@ function saveWorkoutPlan() {
     currentWorkoutPlan.name = workoutName;
     currentWorkoutPlan.createdAt = new Date().toISOString();
     
-    db.collection('users').doc(currentUser.memberId)
-        .collection('workouts').add(currentWorkoutPlan)
-        .then(() => {
-            alert(`Workout "${workoutName}" saved successfully!`);
-            clearWorkoutPlan();
-            loadSavedWorkouts();
-        })
-        .catch((error) => {
-            alert('Error saving workout: ' + error.message);
-        });
+    // Salvăm în localStorage în loc de Firebase
+    const savedWorkouts = JSON.parse(localStorage.getItem('savedWorkouts') || '[]');
+    savedWorkouts.push(currentWorkoutPlan);
+    localStorage.setItem('savedWorkouts', JSON.stringify(savedWorkouts));
+    
+    alert(`Workout "${workoutName}" saved successfully!`);
+    clearWorkoutPlan();
+    loadSavedWorkouts();
 }
 
 function loadWorkoutForEdit(index) {
